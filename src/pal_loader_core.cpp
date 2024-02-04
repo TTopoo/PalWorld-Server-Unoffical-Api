@@ -20,7 +20,7 @@ std::string str_tolower(std::string s) {
 void pal_loader_thread_start() {
     spdlog::info("loading ...");
 
-    if (!setting_init("psua_setting.json")) {
+    if (!setting_init(L"psua_setting.json")) {
         spdlog::error("setting_init failed");
         return;
     }

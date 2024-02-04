@@ -3,6 +3,7 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <filesystem>
 
 std::wstring local_codepage_to_utf16(std::string input) {
     size_t       need = MultiByteToWideChar(CP_ACP, 0, input.c_str(), input.size(), 0, 0);
@@ -13,7 +14,7 @@ std::wstring local_codepage_to_utf16(std::string input) {
     return result;
 }
 
-std::string utf16_to_local_codepage(wchar_t * data, size_t len) {
+std::string utf16_to_local_codepage(wchar_t *data, size_t len) {
     BOOL ignore;
 
     size_t      need = WideCharToMultiByte(CP_ACP, 0, data, len, 0, 0, "?", &ignore);
@@ -58,4 +59,48 @@ unsigned long long search_pattern(const unsigned char* data, const unsigned int 
     else {
         return 0;
     }
+}
+
+HMODULE self_module_handle() {
+    MEMORY_BASIC_INFORMATION mbi;
+    return ((::VirtualQuery(self_module_handle, &mbi, sizeof(mbi)) != 0) ? (HMODULE)mbi.AllocationBase : NULL);
+}
+
+inline std::wstring self_module_path() {
+    static const size_t INITIAL_BUFFER_SIZE = MAX_PATH;
+    static const size_t MAX_ITERATIONS      = 7;
+    std::wstring ret;
+    DWORD bufferSize = INITIAL_BUFFER_SIZE;
+    auto module_handle = self_module_handle();
+    if (module_handle == NULL) {
+        return L"";
+    }
+
+    for (size_t iterations = 0; iterations < MAX_ITERATIONS; ++iterations) {
+        ret.resize(bufferSize);
+        DWORD charsReturned = ::GetModuleFileNameW(module_handle, &ret[0], bufferSize);
+        if (charsReturned < ret.length()) {
+            ret.resize(charsReturned);
+            return ret;
+        }
+        else {
+            bufferSize *= 2;
+        }
+    }
+    return L"";
+}
+
+std::wstring real_file_path(std::wstring setting_name) {
+    std::filesystem::path module_path;
+
+    auto module_filename = self_module_path();
+    if (module_filename.empty()) {
+        return L"";
+    }
+
+    module_path = module_filename;
+    module_path = module_path.parent_path();
+    module_path.append(setting_name);
+
+    return module_path.wstring();
 }

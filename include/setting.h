@@ -3,16 +3,15 @@
 #include <string>
 #include <fstream>
 
-bool setting_init(std::string setting_path);
+bool setting_init(std::wstring setting_name);
 
 class Setting
 {
 public:
     static Setting& getInstance();
 
-    bool readSettingFile(std::string setting_path);
+    bool readSettingFile(std::wstring setting_name);
 
-    std::ifstream setting_stream;
 
     // signature
     std::string signatureGWorld;

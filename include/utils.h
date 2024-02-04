@@ -9,6 +9,7 @@ std::string local_codepage_to_utf16(std::string input);
 #else
 std::wstring local_codepage_to_utf16(std::string input);
 std::string  utf16_to_local_codepage(wchar_t *data, size_t len);
+std::wstring real_file_path(std::wstring setting_name);
 #endif
 
 std::vector<unsigned short> hexstring2shorts(const std::string &hex);

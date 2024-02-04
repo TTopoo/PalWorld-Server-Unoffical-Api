@@ -1,15 +1,18 @@
 #include "setting.h"
+
+#include "utils.h"
+
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-bool setting_init(std::string setting_path)
+bool setting_init(std::wstring setting_name)
 {
-    return Setting::getInstance().readSettingFile(setting_path);
+    return Setting::getInstance().readSettingFile(setting_name);
 }
 
 Setting::Setting()
 {
-    
+
 }
 
 Setting &Setting::getInstance()
@@ -18,10 +21,23 @@ Setting &Setting::getInstance()
     return instance;
 }
 
-bool Setting::readSettingFile(std::string setting_path)
+bool Setting::readSettingFile(std::wstring setting_name)
 {
     try
     {
+        std::ifstream setting_stream;
+        std::wstring setting_path;
+
+#ifdef _WIN32
+        setting_path = real_file_path(setting_name);
+#else
+        setting_path = std::wstring setting_path = setting_name;
+
+#endif
+        if (setting_path.empty()) {
+            return false;
+        }
+
         setting_stream.open(setting_path);
         if(!setting_stream.is_open())
         {
@@ -30,7 +46,7 @@ bool Setting::readSettingFile(std::string setting_path)
 
         json data;
         setting_stream >> data;
-        
+
         data = data["pal-plugin-loader"];
         json signature;
         #ifdef _WIN32
