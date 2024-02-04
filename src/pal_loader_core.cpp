@@ -20,8 +20,16 @@ std::string str_tolower(std::string s) {
 void pal_loader_thread_start() {
     spdlog::info("loading ...");
 
-    setting_init("psua_setting.json");
-    offset_init();
+    if (!setting_init("psua_setting.json")) {
+        spdlog::error("setting_init failed");
+        return;
+    }
+
+    if (!offset_init()) {
+        spdlog::error("offset_init failed");
+        return;
+    }
+
     engine_init();
     SDK::sdk_init();
     install_hooks();
